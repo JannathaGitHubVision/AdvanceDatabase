@@ -1,0 +1,92 @@
+Question 3
+3.2
+The separation of duties is crucial for two main reasons:
+Security: It limits the power of a single user and reduces the risk of unauthorized data access or manipulation. For example, Tshepo can only read data, not modify it.
+Prevention of Fraud: It prevents one person from controlling all aspects of a transaction, reducing the risk of errors and fraud. For instance, Mya can insert data but cannot read all data.
+
+Question 4
+4.2
+The solution used in Q.4.1 is a PL/SQL anonymous block. An anonymous block is a PL/SQL block that appears within your application and it is not named or stored in the database. The benefits of using this approach for ABC DELIVERY SPECIALISTS are:
+
+1. **Ad-hoc Execution**: Since the PL/SQL block is not stored in the database, it can be run on an ad-hoc basis whenever needed. This is useful for generating reports that do not need to be run on a regular schedule.
+
+2. **Performance**: PL/SQL allows for SQL commands to be processed in blocks, which can significantly reduce the communication between the application and the database, leading to improved performance.
+
+3. **Error Handling**: PL/SQL provides robust error handling capabilities, making it easier to debug and manage errors.
+
+4. **Cursor Management**: The use of cursors in PL/SQL allows for more complex queries and data manipulation, providing greater flexibility in generating reports.
+
+5. **Security**: Since the code is run directly by the application and not stored in the database, there's less risk of SQL injection attacks.
+
+Overall, using a PL/SQL anonymous block for generating this report provides flexibility, performance benefits, robust error handling, and security advantages.
+
+
+Question 5
+5.2
+A PL/SQL block is divided into three sections: the Declaration section, the Execution section, and the Exception handling section.
+
+1. **Declaration Section**: This is where variables, constants, cursors, and other elements are declared for use in the block. In your query, this section includes the declaration of the variables `driverID`, `Fname`, `surname`, and `DelProced`, as well as the cursor `DelVal`.
+
+    ```sql
+    DECLARE
+        driverID  StaffDelivery.StaffId %TYPE;
+        Fname     StaffDelivery.FirstName %TYPE;
+        surname   StaffDelivery.Surname  %TYPE;
+        DelProced DeliveryItems.DeliveryItemId %TYPE;
+        
+        CURSOR DelVal IS ...
+    ```
+
+2. **Execution Section**: This is where the main logic of the program is written. It's where SQL statements are executed and where control structures (like loops or conditional statements) are used. In your query, this section includes the loop that fetches each row from the `DelVal` cursor and outputs the details of each delivery.
+
+    ```sql
+    BEGIN
+        FOR  eachDelVal IN DelVal
+            LOOP
+                driverID := eachDelVal.StaffId;
+                Fname := eachDelVal.FirstName;
+                surname := eachDelVal.Surname;
+                DelProced := eachDelVal.DeliveryCount;
+                
+                dbms_output.put_line('---------------------------------------------');
+                dbms_output.put_line('DRIVER ID : '|| driverID );
+                dbms_output.put_line('FIRST NAME : '|| Fname);
+                dbms_output.put_line('SURNAME : ' || surname);
+                dbms_output.put_line('DELIVERIES PROCESSED : '|| DelProced);
+                dbms_output.put_line('---------------------------------------------');
+            END LOOP;
+    END;
+    ```
+
+3. **Exception Handling Section**: This is where exceptions (errors) are handled. If an error occurs in the execution section, control is passed to the exception handling section.
+
+In summary, your PL/SQL block includes a declaration section where variables and a cursor are declared, and an execution section where these elements are used to fetch and output data.
+
+
+
+5.3.1
+A View in SQL is a virtual table based on the result-set of an SQL statement. It contains rows and columns, just like a real table. The fields in a view are fields from one or more real tables in the database.
+
+Views are used for the following reasons:
+
+**Security: Views can display specific columns from the table based on the set conditions. So, a user can be given permission to access the data through the view, without granting the permissions to directly access the base table of the view.
+**Complexity: A view can simplify the complexity of a query because it can encapsulate complicated SQL queries into a single view, which you can then treat as a regular table.
+**Reusability and Consistency: Once a view is created, it can be reused many times, providing a consistent result set structure every time it is queried
+
+Question 6
+Here are two suggestions:
+
+Use of Exception Handling: PL/SQL supports the use of exception handling to catch and handle runtime errors. This can be particularly useful in a database environment where many things can go wrong, such as loss of connection, violation of constraints, etc. You could add an exception handling section to your PL/SQL block to catch any exceptions and print a meaningful error message.
+
+Optimization with Bulk Collect: If the number of customers is large, fetching rows one at a time from the cursor might be inefficient. PL/SQL provides a feature called BULK COLLECT that allows you to fetch multiple rows at once into a collection, which can significantly improve the performance of your code.
+
+As for alternatives, you could consider:
+
+SQL Reporting Tools: There are many SQL reporting tools available that can generate this kind of report with less coding. These tools often provide a user-friendly interface where you can simply drag and drop the fields you’re interested in, define your conditions, and let the tool generate the SQL for you.
+
+Stored Procedures or Functions: If this report needs to be generated regularly, you could encapsulate this code into a stored procedure or function. This way, you can simply call the procedure or function whenever you need to generate the report, rather than having to write and execute the entire PL/SQL block each time.
+
+Remember, the best approach depends on your specific needs and constraints. Always consider factors like performance, maintainability, and the specific requirements of your task when deciding on an approach.
+
+
+

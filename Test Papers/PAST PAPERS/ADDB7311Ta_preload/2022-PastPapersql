@@ -1,0 +1,160 @@
+create table EMPLOYEES 
+(
+    employee_id     varchar2(10)            not null      primary key,
+    first_name      varchar2(10)         not null,
+    surname         varchar2(10)         not null,
+    email           varchar2(16)         not null
+);
+
+create table LOCATIONS 
+(
+    location_id         		varchar2(10)   	 not null    primary key,
+    location_type       		varchar2(10)     not null,
+    location_address      		varchar2(20)    not null,
+    location_difficulty     	number(3,0)      not null
+);
+
+create table ENVIRONMENT_ACTIVITIES 
+(
+    env_id          varchar(10)     not null    primary key,
+    env_date        date            not null,
+    env_hours    	number(3,2)     not null,
+    employee_id     varchar2(10)       not null,
+                      CONSTRAINT emp_id
+                      FOREIGN KEY (employee_id)
+                                            REFERENCES EMPLOYEES(employee_id),
+    location_id     varchar2(10)       not null,
+                      CONSTRAINT loc_id
+                      FOREIGN KEY (location_id)
+                      REFERENCES LOCATIONS(location_id)
+);
+
+insert all
+  into EMPLOYEES (employee_id, first_name, surname, email)
+    values('EMP_1', 'Jeff', 'Hendricks', 'jh@yahoo.com')
+  into EMPLOYEES (employee_id, first_name, surname, email)
+   values('EMP_2', 'John', 'Abelton', 'johna@gmail.com')
+  into EMPLOYEES (employee_id, first_name, surname, email)
+   values('EMP_3', 'Sam', 'Goodwill', 'samgo@isat.co.za')
+  Select * from dual;
+  Commit;
+  
+insert all
+  into LOCATIONS (location_id, location_type, location_address, location_difficulty)
+    values('LOC_1', 'Beach', '10 Seaside Road', 6)
+  into LOCATIONS (location_id, location_type, location_address, location_difficulty)
+   values('LOC_2', 'Forest', '13 Treeview Road', 5)
+  into LOCATIONS (location_id, location_type, location_address, location_difficulty)
+   values('LOC_3', 'Lake', '18 Waterside Lane', 8)
+  Select * from dual;
+  Commit;
+  
+insert all
+  into ENVIRONMENT_ACTIVITIES(env_id, env_date, env_hours, employee_id, location_id)
+    values('ENV_1', '15 July 2022', 3.00, 'EMP_1', 'LOC_1')
+  into ENVIRONMENT_ACTIVITIES(env_id, env_date, env_hours, employee_id, location_id)
+   values('ENV_2', '17 July 2022', 2.00, 'EMP_3', 'LOC_3')
+  into ENVIRONMENT_ACTIVITIES(env_id, env_date, env_hours, employee_id, location_id)
+   values('ENV_3', '18 July 2022', 1.00, 'EMP_2', 'LOC_2')
+  INTO ENVIRONMENT_ACTIVITIES(env_id, env_date, env_hours, employee_id, location_id)
+    values('ENV_4', '19 July 2022', 2.00, 'EMP_1', 'LOC_3')
+  Select * from dual;
+  Commit;
+
+Select * from ENVIRONMENT_ACTIVITIES;
+SELECT * FROM LOCATIONS;
+SELECT * FROM EMPLOYEES;
+
+
+--QUESTION 1
+CREATE SYNONYM emp
+FOR EMPLOYEES;
+
+SELECT * FROM emp;
+--HAVING A SYNOYM MAKES EASY TO ACCESS THE TABLE IN A SIMPLE NAME RATHER THAN PUTTING WHOLE NAME OF A TABLE
+
+
+--QUESTION 2
+SELECT emp.first_name ||' '|| emp.surname AS Employee,LOCATIONS.location_difficulty,ENVIRONMENT_ACTIVITIES.env_hours AS Environmental_Hours
+FROM emp 
+INNER JOIN ENVIRONMENT_ACTIVITIES ON emp.employee_id = ENVIRONMENT_ACTIVITIES.employee_id
+INNER JOIN LOCATIONS ON locations.location_id = environment_activities.location_id;
+
+
+
+--QUESTION 3
+SELECT emp.first_name ||' '|| emp.surname AS Employee , locations.location_id , (10-ENVIRONMENT_ACTIVITIES.env_hours) AS Hours_To_Target
+FROM emp
+INNER JOIN ENVIRONMENT_ACTIVITIES ON emp.employee_id = ENVIRONMENT_ACTIVITIES.employee_id
+INNER JOIN LOCATIONS ON locations.location_id = environment_activities.location_id
+WHERE (10-ENVIRONMENT_ACTIVITIES.env_hours) <10
+ORDER BY (10-ENVIRONMENT_ACTIVITIES.env_hours);
+
+
+--QUESTION 4
+DECLARE
+    first_Name emp.first_name %TYPE;
+    surname emp.surname %TYPE;
+    address LOCATIONS.location_address %TYPE;
+
+    CURSOR val IS
+        SELECT emp.first_name, emp.surname, LOCATIONS.location_address
+        FROM emp
+        INNER JOIN ENVIRONMENT_ACTIVITIES ON emp.employee_id = ENVIRONMENT_ACTIVITIES.employee_id
+        INNER JOIN LOCATIONS ON locations.location_id = environment_activities.location_id
+        WHERE LOCATIONS.location_address LIKE '%Waterside%'
+        ORDER BY LOCATIONS.location_address;
+
+BEGIN
+    FOR E IN val
+        LOOP
+            first_Name := E.first_name;
+            surname := E.surname;
+            address := E.location_address;
+
+            dbms_output.put_line('-------------------------------------------------');
+            dbms_output.put_line('EMPLOYEE FIRST NAME : ' || first_Name );
+            dbms_output.put_line('EMPLOYEE SURNAME : ' || surname );
+            dbms_output.put_line('LOCATION ADDRESS : ' || address );
+            dbms_output.put_line('-------------------------------------------------');
+        END LOOP;
+END;
+
+
+--Question 5
+SET SERVEROUTPUT ON;
+DECLARE  
+  emp_id  VARCHAR2(50);
+  total   NUMBER(8,2);
+CURSOR info IS
+SELECT EMPLOYEES.employee_id, AVG(ENVIRONMENT_ACTIVITIES.env_hours) AS TOTAL_HOURS
+  FROM EMPLOYEES 
+  INNER JOIN ENVIRONMENT_ACTIVITIES ON EMPLOYEES.employee_id = ENVIRONMENT_ACTIVITIES.employee_id
+  WHERE EMPLOYEES.employee_id = 'EMP_1'
+  GROUP BY EMPLOYEES.employee_id
+  ORDER BY EMPLOYEES.employee_id;
+BEGIN
+--here iam opening the cursor to access the rows
+    FOR rec IN info
+    LOOP
+        emp_id:= rec.employee_id;
+        total:= rec.TOTAL_HOURS;
+        --here Iam closing after they done with finding the rows
+        DBMS_OUTPUT.PUT_LINE('------------------------------------------');
+        DBMS_OUTPUT.PUT_LINE('EMPLOYEE ID:      ' ||   emp_id);
+        DBMS_OUTPUT.PUT_LINE('AVERAGE HOURS:    ' ||   total);
+        DBMS_OUTPUT.PUT_LINE('------------------------------------------');
+    END LOOP;
+END;
+
+
+
+--QUESTION 6
+CREATE OR REPLACE VIEW vwEmployeeHours AS
+SELECT emp.email, LOCATIONS.location_type , LOCATIONS.location_difficulty,ENVIRONMENT_ACTIVITIES.env_hours
+FROM  emp
+INNER JOIN ENVIRONMENT_ACTIVITIES ON emp.employee_id = ENVIRONMENT_ACTIVITIES.employee_id
+INNER JOIN LOCATIONS ON locations.location_id = environment_activities.location_id
+WHERE ENVIRONMENT_ACTIVITIES.env_hours BETWEEN 2 AND 3;
+
+SELECT * FROM vwEmployeeHours;
